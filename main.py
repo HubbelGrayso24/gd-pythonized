@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from init import initialize
 from results import results
@@ -15,8 +16,8 @@ vars = initialize(1)
 H0, a, a_norm, m2, C_vect, tau0, pop0, pop5, pop5_fertadj, popminus5, popminus10, ubar, trmult_reduced, n, earth_indices, indicator_sea, subs, subs_vect, beta, tail_bands, ind_islands, alpha, theta, Omega = vars
 
 # Distribution of land for simulation
-H0 = sio.loadmat('H0.mat')['H0']
-H = H0[np.ix_(earth_indices)]
+H0_arr = np.asarray(H0).reshape(-1)
+H = H0_arr[earth_indices]
 
 # Number of periods
 nb_per = 600
@@ -32,42 +33,44 @@ plots(H, realgdp_w, u_w, u2_w, prod_w, l, u, tau, realgdp)
 nb_back = 180
 
 # Run model backwards
-l_b, u_b, w_b, tau_b, phi_b, realgdp_b = backward(H0[np.ix_(earth_indices)], nb_back, vars)
+l_b, u_b, w_b, tau_b, phi_b, realgdp_b = backward(H, nb_back, vars)
 
 # Calculate correlations
 def calculate_correlation(x, y):
     return np.corrcoef(x, y)[0, 1]
 
 print('CORRELATIONS WITH 1995 DATA - CELL LEVEL')
-print(calculate_correlation(popminus5[np.ix_(earth_indices)], H0[np.ix_(earth_indices)] * l_b[:, 4]))
-print(calculate_correlation(np.log(popminus5[np.ix_(earth_indices)]), np.log(H0[np.ix_(earth_indices)] * l_b[:, 4])))
-print(calculate_correlation(pop0[np.ix_(earth_indices)] - popminus5[np.ix_(earth_indices)], pop0[np.ix_(earth_indices)] - H0[np.ix_(earth_indices)] * l_b[:, 4]))
-print(calculate_correlation(np.log(pop0[np.ix_(earth_indices)]) - np.log(popminus5[np.ix_(earth_indices)]), np.log(pop0[np.ix_(earth_indices)]) - np.log(H0[np.ix_(earth_indices)] * l_b[:, 4])))
+print(calculate_correlation(popminus5[earth_indices], H0_arr[earth_indices] * l_b[:, 4]))
+print(calculate_correlation(np.log(popminus5[earth_indices]), np.log(H0_arr[earth_indices] * l_b[:, 4])))
+print(calculate_correlation(pop0[earth_indices] - popminus5[earth_indices], pop0[earth_indices] - H0_arr[earth_indices] * l_b[:, 4]))
+print(calculate_correlation(np.log(pop0[earth_indices]) - np.log(popminus5[earth_indices]), np.log(pop0[earth_indices]) - np.log(H0_arr[earth_indices] * l_b[:, 4])))
 
 print('CORRELATIONS WITH 1990 DATA - CELL LEVEL')
-print(calculate_correlation(popminus10[np.ix_(earth_indices)], H0[np.ix_(earth_indices)] * l_b[:, 9]))
-print(calculate_correlation(np.log(popminus10[np.ix_(earth_indices)]), np.log(H0[np.ix_(earth_indices)] * l_b[:, 9])))
-print(calculate_correlation(pop0[np.ix_(earth_indices)] - popminus10[np.ix_(earth_indices)], pop0[np.ix_(earth_indices)] - H0[np.ix_(earth_indices)] * l_b[:, 9]))
-print(calculate_correlation(np.log(pop0[np.ix_(earth_indices)]) - np.log(popminus10[np.ix_(earth_indices)]), np.log(pop0[np.ix_(earth_indices)]) - np.log(H0[np.ix_(earth_indices)] * l_b[:, 9])))
+print(calculate_correlation(popminus10[earth_indices], H0_arr[earth_indices] * l_b[:, 9]))
+print(calculate_correlation(np.log(popminus10[earth_indices]), np.log(H0_arr[earth_indices] * l_b[:, 9])))
+print(calculate_correlation(pop0[earth_indices] - popminus10[earth_indices], pop0[earth_indices] - H0_arr[earth_indices] * l_b[:, 9]))
+print(calculate_correlation(np.log(pop0[earth_indices]) - np.log(popminus10[earth_indices]), np.log(pop0[earth_indices]) - np.log(H0_arr[earth_indices] * l_b[:, 9])))
 
 print('CORRELATIONS WITH 1995 DATA - COUNTRY LEVEL')
-popminus5_ctry_d = np.bincount(C_vect.astype(int), weights=popminus5[np.ix_(earth_indices)])
-popminus5_ctry_m = np.bincount(C_vect.astype(int), weights=H0[np.ix_(earth_indices)] * l_b[:, 4])
-pop0_ctry = np.bincount(C_vect.astype(int), weights=pop0[np.ix_(earth_indices)])
+ctry_idx = C_vect.astype(int) - 1
+popminus5_ctry_d = np.bincount(ctry_idx, weights=popminus5[earth_indices])
+popminus5_ctry_m = np.bincount(ctry_idx, weights=H0_arr[earth_indices] * l_b[:, 4])
+pop0_ctry = np.bincount(ctry_idx, weights=pop0[earth_indices])
 print(calculate_correlation(popminus5_ctry_d, popminus5_ctry_m))
 print(calculate_correlation(np.log(popminus5_ctry_d), np.log(popminus5_ctry_m)))
 print(calculate_correlation(pop0_ctry - popminus5_ctry_d, pop0_ctry - popminus5_ctry_m))
 print(calculate_correlation(np.log(pop0_ctry) - np.log(popminus5_ctry_d), np.log(pop0_ctry) - np.log(popminus5_ctry_m)))
 
 print('CORRELATIONS WITH 1990 DATA - COUNTRY LEVEL')
-popminus10_ctry_d = np.bincount(C_vect.astype(int), weights=popminus10[np.ix_(earth_indices)])
-popminus10_ctry_m = np.bincount(C_vect.astype(int), weights=H0[np.ix_(earth_indices)] * l_b[:, 9])
+popminus10_ctry_d = np.bincount(ctry_idx, weights=popminus10[earth_indices])
+popminus10_ctry_m = np.bincount(ctry_idx, weights=H0_arr[earth_indices] * l_b[:, 9])
 print(calculate_correlation(popminus10_ctry_d, popminus10_ctry_m))
 print(calculate_correlation(np.log(popminus10_ctry_d), np.log(popminus10_ctry_m)))
 print(calculate_correlation(pop0_ctry - popminus10_ctry_d, pop0_ctry - popminus10_ctry_m))
 print(calculate_correlation(np.log(pop0_ctry) - np.log(popminus10_ctry_d), np.log(pop0_ctry) - np.log(popminus10_ctry_m)))
 
 # Save all the output to disk
+Path('Output').mkdir(parents=True, exist_ok=True)
 sio.savemat('Output/realgdp_w.mat', {'realgdp_w': realgdp_w})
 sio.savemat('Output/u_w.mat', {'u_w': u_w})
 sio.savemat('Output/u2_w.mat', {'u2_w': u2_w})

@@ -8,8 +8,9 @@ def model(H, T, vars):
     
     # Initialize parameters and output
     # Normalize population to population density
+    H0_arr = np.asarray(H0).reshape(-1)
     popdens = pop0.copy()
-    popdens[earth_indices] = popdens[earth_indices] / H0[earth_indices]
+    popdens[earth_indices] = popdens[earth_indices] / H0_arr[earth_indices]
     popdens[np.isinf(popdens)] = 0
     popdens[np.isnan(popdens)] = 0
 
@@ -82,6 +83,8 @@ def model(H, T, vars):
             
             # Matrix product
             rhs = np.dot(trmult_reduced, input_integral_inner)
+            eps_val = 1e-12
+            rhs = np.maximum(rhs, eps_val)
             
             uhat_loop = aa2 * input_uhat_inner * rhs ** (1 / (khi * theta / Omega + theta * (1 + theta) / (1 + 2 * theta)))
             error = np.sum((uhat_loop - uhat_old) ** 2)
@@ -90,7 +93,7 @@ def model(H, T, vars):
 
         # Solve for u using equation (53)
         u[:, t] = uhat[:, t] / (lbar / np.sum(uhat[:, t] ** (1 / Omega) * m2 ** (-1 / Omega))) ** \
-                  (Omega * ((1 / Omega * (lambda_ + (1 - mu) - gamma1 / ksi) * theta - alpha + theta) / theta - 1))
+                  (Omega * (((1 / Omega) * (((lambda_ + (1 - mu) - gamma1 / ksi) * theta) - alpha) + theta) / theta - 1))
 
         # Solve for population using equation (7)
         l[:, t] = H ** -1 * u[:, t] ** (1 / Omega) * m2 ** (-1 / Omega)
@@ -113,6 +116,8 @@ def model(H, T, vars):
         if t == 0 or t == T - 1:
             print('TOTAL IMPORTS TO WORLD GDP')
             trsharesum = np.dot(trmult_reduced, (tau[:, t] * l[:, t] ** (alpha - (1 - mu - gamma1 / ksi) * theta) * w[:, t] ** (-theta)))
+            eps_val = 1e-12
+            trsharesum = np.maximum(trsharesum, eps_val)
             domtrade = 0
             for i in range(n):
                 for j in range(n):

@@ -7,7 +7,9 @@ def accumarray(indices, values, size):
     # A replacement for MATLAB's accumarray
     result = np.zeros(size)
     for idx, value in zip(indices, values):
-        result[idx] += value
+        j = int(idx) - 1
+        if 0 <= j < size:
+            result[j] += value
     return result
 
 def results(H, T, vars):
@@ -68,9 +70,9 @@ def results(H, T, vars):
         realgdp_w[t] = np.sum(realgdp[:, t] * H * l[:, t])
         prod_w[t] = np.sum(np.power(tau[:, t] * H * np.power(l[:, t], 1 + alpha), 1 / theta))
         phi_w[t] = np.sum(phi[:, t] * H * l[:, t])
-        PDV_u_w += beta ** (t - 1) * u_w[t]
-        PDV_u2_w += beta ** (t - 1) * u2_w[t]
-        PDV_realgdp_w += beta ** (t - 1) * realgdp_w[t]
+        PDV_u_w += beta ** t * u_w[t]
+        PDV_u2_w += beta ** t * u2_w[t]
+        PDV_realgdp_w += beta ** t * realgdp_w[t]
 
     if beta * u_w[-1] / u_w[-2] < 1:
         PDV_u_w += (beta ** T * u_w[-1] ** 2 / u_w[-2]) / (1 - beta * u_w[-1] / u_w[-2])

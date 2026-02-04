@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from pathlib import Path
 
-def maps(series1, series2, series3, series4, t, earth_indices):
+def maps(series1, series2, series3, series4, t, earth_indices=None):
     """
     Creates 4 maps at time t.
     The series must be in order: 
@@ -11,6 +12,10 @@ def maps(series1, series2, series3, series4, t, earth_indices):
     - series3: prod(t)
     - series4: realgdp(t)
     """
+    if earth_indices is None:
+        from init import earth_indices as _earth_indices
+        earth_indices = _earth_indices
+
     # Take logs of variables
     series1 = np.log(series1)
     series2 = np.log(series2)
@@ -60,6 +65,7 @@ def maps(series1, series2, series3, series4, t, earth_indices):
         plt.title(title)
         
         # Save the output to disk
+        Path('Maps').mkdir(parents=True, exist_ok=True)
         filename = 'Maps/{}_NF_{}_1000.png'.format(title_name, t)
         plt.savefig(filename)
         plt.close()  # Close the figure to avoid memory issues

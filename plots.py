@@ -1,11 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from maps import maps
+import init
+from pathlib import Path
 
 def plots(H, realgdp_w, u_w, u2_w, prod_w, l, u, tau, realgdp):
     global m2, earth_indices, tail_bands, alpha, theta, Omega
+    alpha = init.alpha
+    theta = init.theta
     
-    T = 600
+    T = int(len(realgdp_w))
 
     # Calculate world productivity and real GDP, correlations
     prworld = prod_w
@@ -67,7 +71,9 @@ def plots(H, realgdp_w, u_w, u2_w, prod_w, l, u, tau, realgdp):
     axs[1, 2].set_xlabel('Time')
 
     plt.tight_layout()
-    plt.show()
+    Path('Output').mkdir(parents=True, exist_ok=True)
+    plt.savefig('Output/world_aggregates.png')
+    plt.close(fig)
 
     # Additional Time series plots
     fig, axs = plt.subplots(2, 2, figsize=(12, 8))
@@ -89,7 +95,9 @@ def plots(H, realgdp_w, u_w, u2_w, prod_w, l, u, tau, realgdp):
     axs[1, 1].set_xlabel('Time')
 
     plt.tight_layout()
-    plt.show()
+    Path('Output').mkdir(parents=True, exist_ok=True)
+    plt.savefig('Output/world_utility.png')
+    plt.close(fig)
 
     # Correlation plots
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))
@@ -107,10 +115,14 @@ def plots(H, realgdp_w, u_w, u2_w, prod_w, l, u, tau, realgdp):
     axs[2].set_xlabel('Time')
 
     plt.tight_layout()
-    plt.show()
+    Path('Output').mkdir(parents=True, exist_ok=True)
+    plt.savefig('Output/correlations.png')
+    plt.close(fig)
 
     # Cell-level maps
-    maps(l[:, 0], u[:, 0], (tau[:, 0] * l[:, 0] ** alpha) ** (1 / theta), realgdp[:, 0], 1)
-    maps(l[:, 199], u[:, 199], (tau[:, 199] * l[:, 199] ** alpha) ** (1 / theta), realgdp[:, 199], 200)
-    maps(l[:, 599], u[:, 599], (tau[:, 599] * l[:, 599] ** alpha) ** (1 / theta), realgdp[:, 599], 600)
-
+    if T >= 1:
+        maps(l[:, 0], u[:, 0], (tau[:, 0] * l[:, 0] ** alpha) ** (1 / theta), realgdp[:, 0], 1)
+    if T >= 200:
+        maps(l[:, 199], u[:, 199], (tau[:, 199] * l[:, 199] ** alpha) ** (1 / theta), realgdp[:, 199], 200)
+    if T >= 600:
+        maps(l[:, 599], u[:, 599], (tau[:, 599] * l[:, 599] ** alpha) ** (1 / theta), realgdp[:, 599], 600)
