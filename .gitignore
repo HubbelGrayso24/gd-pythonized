@@ -1,3 +1,7 @@
 .venv/
 .idea/
 Output/
+__pycache__/
+.DS_Store
+Maps/
+Data/trmult_reduced.mat
